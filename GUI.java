@@ -3,14 +3,29 @@ import java.awt.event.*;
 import java.io.*;
 import javax.swing.*;
 import java.util.*;
+/* note to self: currently there is some sort of bug where if i decide to choose one file, 
+   i'll have to choose it again bc it doesn't show up but either way, it still works dude. 
+
+   do u want to create a back button for every panel???
+   also do you want to handle the case where a user doesn't select a file??
+   hmmmmmmmm 
+   thats a good idea current vinna
+   i'll let future vinna handle this
+   im 100% procrastinating
+   hopefully i'll be smart enough to remove this or suffer the consequences AKA shame
+*/
 
 class GUI extends JFrame implements ActionListener{
-    private JFrame frame;
-    private JPanel startPanel = new JPanel();
-    private JPanel indicesPanel
-    private JButton fileButton, indButton;
-    private JLabel displayFiles;
     private ArrayList<File> filePathsArr;   // storing the filepaths in here for rn
+    private JButton fileButton, indButton, searchButton, topNButton;
+    private JFrame frame;
+    private JLabel displayFiles;
+    private JPanel startPanel = new JPanel();
+    private JPanel indicesPanel = new JPanel();
+    private JPanel searchPanel = new JPanel();
+    private JPanel topNPanel = new JPanel();
+    private JScrollPane jScrollPane1;
+    private JTextArea textBox;
 
     public GUI () {
         // Create Frame
@@ -52,9 +67,11 @@ class GUI extends JFrame implements ActionListener{
         startPanel.setVisible(true);
     }
 
-    // to display GUI, set it to visible & don't allow resizing of window cause i can't deal with that rn
+    // to display GUI, set it to visible
     public void runGui() {
         frame.setVisible(true);
+
+        // that's right. i blocked users from resizing this window so i don't have to bother handling resizing!! who wants to do that! not me!
         frame.setResizable(false);
     }
 
@@ -64,14 +81,35 @@ class GUI extends JFrame implements ActionListener{
             pickFiles();
         }
         else if(command.equals("Construct Inverted Indices")) {
-            // lets start with removing the first panel
+            // lets start with removing the first panel then calling the method
             startPanel.setVisible(false);
-            startPanel.removeAll();
-            startPanel.repaint();
-            startPanel.revalidate();
-
+            // startPanel.removeAll();
+            // startPanel.repaint();
+            // startPanel.revalidate();
             invertedIndices();
         }
+        else if(command.equals("Search for Term")) {
+            System.out.println("aw yeah let's search for a term");
+            indicesPanel.setVisible(false);
+            // indicesPanel.removeAll();
+            // indicesPanel.repaint();
+            // indicesPanel.revalidate();
+            searchTerm();
+        }
+        else if(command.equals("Top-N")) {
+            System.out.println("interesting...i have to do all this work");
+        }
+    }
+
+    // call this to display a new panel each time a button is pressed
+    private void displayNewPanel(JPanel panelName) {
+        // initializing the size and giving it the ability to display
+        panelName.setSize(600, 600);
+        panelName.setLayout(null);
+        panelName.repaint();
+        panelName.revalidate();
+        panelName.setVisible(true);
+        frame.add(panelName);
     }
 
     // PICKING FILES
@@ -79,7 +117,7 @@ class GUI extends JFrame implements ActionListener{
         // user chooses some file(s) with multiselection so they can choose more than one file if wanted
         JFileChooser chooseFiles = new JFileChooser();
         chooseFiles.setMultiSelectionEnabled(true);
-        chooseFiles.setCurrentDirectory(new File("./Data"));    // so i dont' have to keep searching for data folder. im too lazy
+        chooseFiles.setCurrentDirectory(new File("./Data"));    // so i don't have to keep searching for data folder. im too lazy
         chooseFiles.setSelectedFile(new File(""));
         chooseFiles.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
 
@@ -87,7 +125,7 @@ class GUI extends JFrame implements ActionListener{
             // store files into an array
             File[] openFiles = chooseFiles.getSelectedFiles();
 
-            // Case: if user wants to reselect files, check: if the displayFiles isn't empty, set it empty
+            // Case: if user wants to reselect files, check: if displayFiles isn't empty, set to empty
             if(displayFiles != null) {
                 displayFiles.setText("");
             }
@@ -102,7 +140,10 @@ class GUI extends JFrame implements ActionListener{
                 filePathsArr.add(openFiles[i]);
 
                 // removing filepath and getting only the name
-                int index = filename.lastIndexOf('\\');
+                int index = filename.lastIndexOf('\\'); // windows
+                if (index < 0) {
+                    index = filename.lastIndexOf('/');  // mac
+                }
                 String outputFile = filename.substring(index+1, filename.length());
                 appendText = appendText + outputFile +"<br/>";
 
@@ -110,30 +151,59 @@ class GUI extends JFrame implements ActionListener{
                 displayFiles.setText("<html>" + appendText + "</html>");
                 displayFiles.setBounds(225,250,500,75);
                 startPanel.add(displayFiles);
+
             }
         } else {
             System.out.println("Exited without choosing files!");
         }
+
+        System.out.println("These are the files chosen: " + filePathsArr); // ~~delete this~~
     }
 
     // DOING INVERTED INDICES
     private void invertedIndices() {
-        System.out.println("INVERTED INDICES YO");
-
         // using the indicesPanel now
         JLabel loadEngine = new JLabel("<html>Engine was loaded &<br/>Inverted indicies were constructed successfully!</html>");
         loadEngine.setFont(new Font("Arial", Font.BOLD, 20));
         loadEngine.setBounds(190,-150,300,500);
         indicesPanel.add(loadEngine);
 
+        // I WANT TO TAKE A NAP
+        searchButton = new JButton("Search for Term");
+        topNButton = new JButton("Top-N");
+        searchButton.setBounds(225,200,150,50);
+        searchButton.addActionListener(this);
 
+        topNButton.setBounds(225,300,150,50);
+        topNButton.addActionListener(this);
 
-        indicesPanel.setSize(600, 600);
-        indicesPanel.setLayout(null);
-        indicesPanel.repaint();
-        indicesPanel.revalidate();
-        indicesPanel.setVisible(true);
+        // add zee buttons to zee panel 
+        indicesPanel.add(searchButton);
+        indicesPanel.add(topNButton);
 
-        frame.add(indicesPanel);
+        displayNewPanel(indicesPanel);
+    }
+
+    // TIME TO SEARCH FOR A TERM o_O
+    private void searchTerm() {
+        System.out.println("ello");
+
+        JLabel searchLabel = new JLabel("<html>Enter Your Search Term</html>");
+        searchLabel.setFont(new Font("Arial", Font.BOLD, 20));
+        searchLabel.setBounds(190,-150,300,500);
+        searchPanel.add(searchLabel);
+
+        textBox = new JTextArea();
+        textBox.setColumns(20);
+        textBox.setLineWrap(true);
+        textBox.setRows(5);
+        textBox.setWrapStyleWord(true);
+        textBox.setEditable(false);
+        jScrollPane1 = new JScrollPane(textBox);
+        searchPanel.add(textBox);
+        searchPanel.add(jScrollPane1);
+
+        displayNewPanel(searchPanel);
+
     }
 }
