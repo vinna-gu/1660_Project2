@@ -223,7 +223,5 @@ class GUI extends JFrame implements ActionListener{
 
         displayNewPanel(searchPanel);
 
-
-
     }
 }
