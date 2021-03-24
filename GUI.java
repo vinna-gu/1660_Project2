@@ -17,7 +17,7 @@ import java.util.*;
 
 class GUI extends JFrame implements ActionListener{
     private ArrayList<File> filePathsArr;   // storing the filepaths in here for rn
-    private JButton fileButton, indButton, searchButton, topNButton;
+    private JButton fileButton, indButton, searchButton, topNButton, backButton, searchTermButton;
     private JFrame frame;
     private JLabel displayFiles;
     private JPanel startPanel = new JPanel();
@@ -26,6 +26,7 @@ class GUI extends JFrame implements ActionListener{
     private JPanel topNPanel = new JPanel();
     private JScrollPane jScrollPane1;
     private JTextArea textBox;
+    private String searchTerm;
 
     public GUI () {
         // Create Frame
@@ -99,6 +100,11 @@ class GUI extends JFrame implements ActionListener{
         else if(command.equals("Top-N")) {
             System.out.println("interesting...i have to do all this work");
         }
+        else if(command.equals("Back")) {
+            if(searchPanel.isVisible()) {
+                prevPanel(searchPanel);
+            }
+        }
     }
 
     // call this to display a new panel each time a button is pressed
@@ -112,6 +118,10 @@ class GUI extends JFrame implements ActionListener{
         frame.add(panelName);
     }
 
+    private void prevPanel(JPanel panelName) {
+        panelName.setVisible(false);
+        indicesPanel.setVisible(true);
+    }
     // PICKING FILES
     private void pickFiles() {
         // user chooses some file(s) with multiselection so they can choose more than one file if wanted
@@ -186,24 +196,34 @@ class GUI extends JFrame implements ActionListener{
 
     // TIME TO SEARCH FOR A TERM o_O
     private void searchTerm() {
-        System.out.println("ello");
-
         JLabel searchLabel = new JLabel("<html>Enter Your Search Term</html>");
         searchLabel.setFont(new Font("Arial", Font.BOLD, 20));
-        searchLabel.setBounds(190,-150,300,500);
+        // searchLabel.setBounds(190,-150,300,500);
+        searchLabel.setBounds(190, -100, 300, 500);
         searchPanel.add(searchLabel);
 
-        textBox = new JTextArea();
-        textBox.setColumns(20);
-        textBox.setLineWrap(true);
-        textBox.setRows(5);
-        textBox.setWrapStyleWord(true);
-        textBox.setEditable(false);
-        jScrollPane1 = new JScrollPane(textBox);
-        searchPanel.add(textBox);
-        searchPanel.add(jScrollPane1);
+        // incorporating a back button
+        backButton = new JButton("Back");
+        backButton.setBounds(10, 30, 100, 50);
+        backButton.addActionListener(this);
+
+        // Giving user ability to enter serach term
+        JTextField searchField =new JTextField();  
+        searchField.setBounds(200, 200, 200,30); 
+        searchTermButton = new JButton("Search");
+        searchTermButton.setBounds(400, 200, 100, 30);
+
+        searchTerm = searchField.getText();
+        System.out.println(searchTerm);
+
+        // add zee buttons to zee panel 
+        searchPanel.add(backButton);
+        searchPanel.add(searchField); 
+        searchPanel.add(searchTermButton);
 
         displayNewPanel(searchPanel);
+
+
 
     }
 }
