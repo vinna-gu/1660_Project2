@@ -20,13 +20,10 @@ class GUI extends JFrame implements ActionListener{
     private JButton fileButton, indButton, searchButton, topNButton, backButton, searchTermButton;
     private JFrame frame;
     private JLabel displayFiles;
-    private JPanel startPanel = new JPanel();
-    private JPanel indicesPanel = new JPanel();
-    private JPanel searchPanel = new JPanel();
-    private JPanel topNPanel = new JPanel();
+    private JPanel startPanel, indicesPanel, searchPanel, topNPanel, searchResultPanel, topNResultPanel;
     private JScrollPane jScrollPane1;
     private JTextArea textBox;
-    private String searchTerm;
+    private JTextField searchField;
 
     public GUI () {
         // Create Frame
@@ -41,6 +38,7 @@ class GUI extends JFrame implements ActionListener{
         frame.add(name);
  
         // need to create a startPanel to hold all this info
+        startPanel = new JPanel();
         startPanel.setSize(600, 600);
         startPanel.setLayout(null);
 
@@ -71,8 +69,6 @@ class GUI extends JFrame implements ActionListener{
     // to display GUI, set it to visible
     public void runGui() {
         frame.setVisible(true);
-
-        // that's right. i blocked users from resizing this window so i don't have to bother handling resizing!! who wants to do that! not me!
         frame.setResizable(false);
     }
 
@@ -84,18 +80,19 @@ class GUI extends JFrame implements ActionListener{
         else if(command.equals("Construct Inverted Indices")) {
             // lets start with removing the first panel then calling the method
             startPanel.setVisible(false);
-            // startPanel.removeAll();
-            // startPanel.repaint();
-            // startPanel.revalidate();
             invertedIndices();
         }
         else if(command.equals("Search for Term")) {
-            System.out.println("aw yeah let's search for a term");
             indicesPanel.setVisible(false);
             // indicesPanel.removeAll();
             // indicesPanel.repaint();
             // indicesPanel.revalidate();
             searchTerm();
+        }
+        else if(command.equals("Search")) {
+            System.out.println("Finding " + searchField.getText());
+            searchPanel.setVisible(false);
+            searchTermResults(searchField.getText());
         }
         else if(command.equals("Top-N")) {
             System.out.println("interesting...i have to do all this work");
@@ -103,11 +100,17 @@ class GUI extends JFrame implements ActionListener{
         else if(command.equals("Back")) {
             if(searchPanel.isVisible()) {
                 prevPanel(searchPanel);
+            } 
+            else if(topNPanel.isVisible()) {
+                prevPanel(topNPanel);
+            }
+            else if(searchResultPanel.isVisible()) {
+                prevPanel(searchResultPanel);
             }
         }
     }
 
-    // call this to display a new panel each time a button is pressed
+    // display a new panel each time a button is pressed
     private void displayNewPanel(JPanel panelName) {
         // initializing the size and giving it the ability to display
         panelName.setSize(600, 600);
@@ -118,11 +121,17 @@ class GUI extends JFrame implements ActionListener{
         frame.add(panelName);
     }
 
+    // for back button functions
     private void prevPanel(JPanel panelName) {
         panelName.setVisible(false);
-        indicesPanel.setVisible(true);
+        if(panelName.equals(searchPanel) || panelName.equals(topNPanel)){
+            displayNewPanel(indicesPanel);
+        }
+        else if(panelName.equals(searchResultPanel)) {
+            displayNewPanel(searchPanel);
+        }
     }
-    // PICKING FILES
+
     private void pickFiles() {
         // user chooses some file(s) with multiselection so they can choose more than one file if wanted
         JFileChooser chooseFiles = new JFileChooser();
@@ -170,15 +179,14 @@ class GUI extends JFrame implements ActionListener{
         System.out.println("These are the files chosen: " + filePathsArr); // ~~delete this~~
     }
 
-    // DOING INVERTED INDICES
+    // ~~~ PANEL METHODS FROM HERE ON OUT ~~~
     private void invertedIndices() {
-        // using the indicesPanel now
+        indicesPanel = new JPanel();
         JLabel loadEngine = new JLabel("<html>Engine was loaded &<br/>Inverted indicies were constructed successfully!</html>");
         loadEngine.setFont(new Font("Arial", Font.BOLD, 20));
         loadEngine.setBounds(190,-150,300,500);
         indicesPanel.add(loadEngine);
 
-        // I WANT TO TAKE A NAP
         searchButton = new JButton("Search for Term");
         topNButton = new JButton("Top-N");
         searchButton.setBounds(225,200,150,50);
@@ -194,8 +202,8 @@ class GUI extends JFrame implements ActionListener{
         displayNewPanel(indicesPanel);
     }
 
-    // TIME TO SEARCH FOR A TERM o_O
     private void searchTerm() {
+        searchPanel = new JPanel();
         JLabel searchLabel = new JLabel("<html>Enter Your Search Term</html>");
         searchLabel.setFont(new Font("Arial", Font.BOLD, 20));
         // searchLabel.setBounds(190,-150,300,500);
@@ -208,20 +216,37 @@ class GUI extends JFrame implements ActionListener{
         backButton.addActionListener(this);
 
         // Giving user ability to enter serach term
-        JTextField searchField =new JTextField();  
+        searchField = new JTextField(50);  
         searchField.setBounds(200, 200, 200,30); 
         searchTermButton = new JButton("Search");
-        searchTermButton.setBounds(400, 200, 100, 30);
+        searchTermButton.setBounds(225, 250, 150, 50);
+        searchTermButton.addActionListener(this);
 
-        searchTerm = searchField.getText();
-        System.out.println(searchTerm);
+        // System.out.println("GETTING TEXT!!!!");
+        // System.out.println(searchField.getText());
+        // searchTerm = searchField.getText();
 
-        // add zee buttons to zee panel 
         searchPanel.add(backButton);
         searchPanel.add(searchField); 
         searchPanel.add(searchTermButton);
 
         displayNewPanel(searchPanel);
+    }
+
+    private void searchTermResults(String term) {
+        searchResultPanel = new JPanel();
+        JLabel msg = new JLabel("<html>You searched for the term: <b>" + searchField.getText().toUpperCase() +"</b></html>");
+        msg.setFont(new Font("Arial", Font.PLAIN, 15));
+        msg.setBounds(100,-150,300,500);
+        searchResultPanel.add(msg);
+
+        backButton = new JButton("Back");
+        backButton.setBounds(10, 30, 100, 50);
+        backButton.addActionListener(this);
+
+        searchResultPanel.add(backButton);
+
+        displayNewPanel(searchResultPanel);
 
     }
 }
